@@ -18,15 +18,18 @@ user:
   stage: build
   variables:
     BRANCH: dev
+    DOCKER_REP: ccr.ccs.tencentyun.com/chaunce/chaunce
+    DOCKER_USER: 100000633927
+    DOCKER_PWD: net111111
     IMAGE_NAME: user-api
     COMMIT_TIME: $(git show -s --format=%ct $CI_COMMIT_SHA)
   script:
     - echo $APP_VERSION
     - docker build -f ./Dockerfile -t ${IMAGE_NAME}:DEV-${APP_VERSION} .
     # - image_id=`grep "Successfully built" docker_log|awk '{print $NF}'`
-    - docker login  -u 757365800@qq.com -p lyl111111 registry.cn-hangzhou.aliyuncs.com
-    - docker tag ${IMAGE_NAME}:DEV-${APP_VERSION} registry.cn-hangzhou.aliyuncs.com/chaunce/${IMAGE_NAME}:DEV-${APP_VERSION}
-    - docker push registry.cn-hangzhou.aliyuncs.com/chaunce/${IMAGE_NAME}:DEV-${APP_VERSION}
+    - docker login  -u ${DOCKER_USER} -p ${DOCKER_PWD} ${DOCKER_REP}
+    - docker tag ${IMAGE_NAME}:DEV-${APP_VERSION} ${DOCKER_REP}/${IMAGE_NAME}:DEV-${APP_VERSION}
+    - docker push ${DOCKER_REP}/${IMAGE_NAME}:DEV-${APP_VERSION}
     - docker rmi $(docker images -f "dangling=true" -q) 
     - docker rmi -f ${IMAGE_NAME}:DEV-${APP_VERSION}
-    - docker rmi -f registry.cn-hangzhou.aliyuncs.com/chaunce/${IMAGE_NAME}:DEV-${APP_VERSION}
+    - docker rmi -f ${DOCKER_REP}/${IMAGE_NAME}:DEV-${APP_VERSION}
