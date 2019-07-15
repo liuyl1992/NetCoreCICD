@@ -18,7 +18,7 @@ user:
   stage: build
   variables:
     BRANCH: dev
-    DOCKER_REP: ccr.ccs.tencentyun.com/chaunce/chaunce
+    DOCKER_REP: ccr.ccs.tencentyun.com/chaunce
     DOCKER_USER: 100000633927
     DOCKER_PWD: net111111
     IMAGE_NAME: user-api
