@@ -1,9 +1,17 @@
 # 利用gitlab测试云厂商自动构建服务
 
 ## :boom:  gitlab CICD完整配置文件
+### 环境变量：
+![](https://github.com/liuyl1992/NetCoreCICD/blob/master/environmentvariable.png)
+
+DOCKER_PATH  Docker文件路径
+DOCKER_PWD   Docker密码 
+DOCKER_REP   Docker仓库地址 
+DOCKER_USER  Docker用户
+IMAGE_NAME   镜像名称
 
 
-
+### 对应完整配置文件：
 ```yml
 
 stages:
