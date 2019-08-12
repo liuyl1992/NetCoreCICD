@@ -20,10 +20,12 @@ stages:
   - tag
   - push
   - recover
+  - deploy
 
 #**************************build******************************** 
 
 job_build:
+#镜像打包
   stage: build
   tags:
     - aliyun 
@@ -45,13 +47,14 @@ job_build:
     - pwd
     - docker ps
     
-    - docker build -f ${DOCKER_PATH} -t ${IMAGE_NAME}:${CI_COMMIT_SHA} ./src
+    - docker build -f ${DOCKER_PATH} -t ${IMAGE_NAME}:${CI_COMMIT_SHA} ${DOCKER_BUILD_PATH}
     - docker images -a
     - echo 镜像打包成功
     
 #***************************tag********************************
 
 job_tag:
+#重命名镜像
   stage: tag
   tags:
     - aliyun 
@@ -72,6 +75,7 @@ job_tag:
 #****************************login*******************************
 
 job_login:
+#登录
   stage: login
   tags:
     - aliyun 
@@ -84,6 +88,7 @@ job_login:
 
 #*****************************push******************************
 job_push:
+#推送镜像
   stage: push
   tags:
     - aliyun 
@@ -103,6 +108,7 @@ job_push:
 #****************************recover*********************************
 
 job_recover:
+#回复初始环境
   stage: recover
   tags:
     - aliyun 
@@ -115,7 +121,9 @@ job_recover:
     - echo $TIME_STAMP
    
   script:
+    #删除没有运行的容器
     - docker container prune -f
+    #删除构建过程中产生的中间镜像例如none的镜像
     - docker rmi $(docker images -f "dangling=true" -q) 
     - docker rmi -f ${IMAGE_NAME}:${CI_COMMIT_SHA}
     - docker rmi -f ${DOCKER_REP}/${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}-${TIME_STAMP}
@@ -123,6 +131,28 @@ job_recover:
     - docker images -a
 
     - echo 本地镜像清除完毕
+
+#****************************deploy*********************************
+
+job_deploy:
+  stage: deploy
+  tags:
+    - aliyun 
+  only:
+    - hotfix
+    
+  before_script:
+    - export COMMIT_TIME=$(git show -s --format=%ct $CI_COMMIT_SHA)
+    - export TIME_STAMP=`date -d @${COMMIT_TIME} +%Y%m%d%H%M%S`
+    - echo $TIME_STAMP
+    
+  script:
+    - echo $DOCKER_REP/$IMAGE_NAME:$CI_COMMIT_REF_SLUG-$TIME_STAMP
+    # 更新k8s服务的镜像，这里默认deployment和容器名称和镜像名一致
+    - kubectl set image deployment/${IMAGE_NAME} ${IMAGE_NAME}=${DOCKER_REP}/${IMAGE_NAME}:${CI_COMMIT_REF_SLUG}-${TIME_STAMP}
+    
+    - echo 服务镜像已更新
+
     
 ```
 
